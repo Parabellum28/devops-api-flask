@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -40,3 +40,19 @@ jobs:
       - name: Push Docker image
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/devops-api-flask:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull ${{ secrets.DOCKER_USERNAME }}/devops-api-flask:latest
+            docker stop devops-flask-api || true
+            docker rm devops-flask-api || true
+            docker run -d \
+              --name devops-flask-api \
+              --restart unless-stopped \
+              -p 127.0.0.1:5000:5000 \
+              ${{ secrets.DOCKER_USERNAME }}/devops-api-flask:latest
