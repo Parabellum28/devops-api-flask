@@ -1,0 +1,9 @@
+services:
+  api:
+    build: .
+    container_name: devops-flask-api
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
